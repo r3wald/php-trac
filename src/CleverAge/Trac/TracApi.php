@@ -109,6 +109,9 @@ class TracApi
 
     // ------ Public Functional Methods ------ \\
 
+    /**
+     * @see parseFilters
+     */
     public function getTicketIdsBy(array $filters = array(), $limit = 0)
     {
         $f = $this->parseFilters($filters);
@@ -228,14 +231,27 @@ class TracApi
         return new $class($arrayFromApi);
     }
 
+    /**
+     * $filters should be of one of these two forms:
+     * array("column1"=>"value1", "column2"=>"value2", "column3"=>"value3", ... ) - this checks only for equality
+     * array("column1=value1", "column2^=value2", "column3!~value3", ... ) - this uses trac operators
+     *
+     * @see http://trac.edgewall.org/wiki/TracQuery#QueryLanguage
+     *
+     * @param array $filters
+     * @return string
+     */
     protected function parseFilters(array $filters)
     {
         $f = array();
 
         foreach ($filters as $k => $v) {
-            $f[] = $k.'='.$v;
+            if (strstr($v, '=') !== false) {
+                $f[] = $v;
+            } else {
+                $f[] = $k . '=' . $v;
+            }
         }
-
         return implode('&', $f);
     }
 }
